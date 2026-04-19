@@ -14,7 +14,7 @@ int main() {
 		appInfo.appName = "Havoc Test";
 		appInfo.appVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
 
-		Havoc::Vulkan::Instance instance{ windowManager, appInfo };
+		Havoc::Vulkan::Instance instance{ windowManager, appInfo }; // Temporary (test) TODO
 
 		app.run();
 	}
