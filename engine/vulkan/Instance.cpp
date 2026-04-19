@@ -47,7 +47,7 @@ namespace Havoc::Vulkan {
 
 		VkInstanceCreateInfo createInfo{ VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
 		createInfo.pApplicationInfo = &appInfo;
-		createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+		//createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR; Only add to macOS (do later) TODO
 
 		auto extensions = getRequiredExtensions(windowManager);
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
