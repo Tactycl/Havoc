@@ -5,7 +5,7 @@ file(GLOB_RECURSE ENGINE_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp
 )
 
-add_executable(engine ${ENGINE_SOURCES} "main.cpp")
+add_executable(engine ${ENGINE_SOURCES})
 
 # GLFW integration
 include(FetchContent)
@@ -32,6 +32,10 @@ FetchContent_MakeAvailable(glm)
 # Vulkan integration
 find_package(Vulkan REQUIRED)
 
+if (NOT TARGET Vulkan::Vulkan)
+    message(FATAL_ERROR "Vulkan target not found")
+endif()
+
 target_link_libraries(engine
     PRIVATE
         glfw
@@ -41,6 +45,7 @@ target_link_libraries(engine
 
 target_include_directories(engine PRIVATE
     ${CMAKE_SOURCE_DIR}/include
+    ${Vulkan_INCLUDE_DIRS}
 )
 
 set_property(TARGET engine PROPERTY CXX_STANDARD 23)

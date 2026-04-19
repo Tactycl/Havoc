@@ -38,6 +38,8 @@ namespace Havoc {
 
 		bool isEmpty() const { return mWindows.empty(); }
 
+		auto getRequiredInstanceExtensions(uint32_t* count) { return glfwGetRequiredInstanceExtensions(count); }
+
 		void closeWindow(WindowHandle handle);
 		void update();
 
