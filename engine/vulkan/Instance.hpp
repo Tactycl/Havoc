@@ -9,12 +9,7 @@
 #include <iostream>
 
 namespace Havoc::Vulkan {
-	#ifdef NDEBUG
-		constexpr bool ENABLE_VALIDATION_LAYERS = false;
-	#else
-		constexpr bool ENABLE_VALIDATION_LAYERS = true;
-	#endif
-
+#ifndef NDEBUG
 	const std::vector<const char*> VALIDATION_LAYERS = { "VK_LAYER_KHRONOS_validation" };
 
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -23,9 +18,13 @@ namespace Havoc::Vulkan {
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 		void* pUserData
 	) {
-		std::cerr << "Validation Layer: " << pCallbackData->pMessage << "\n";
+		if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+			std::cerr << "<== Validation Layer: ==> \n" << pCallbackData->pMessage << "\n\n";
+		}
+
 		return VK_FALSE;
 	}
+#endif
 
 	struct ApplicationInfo {
 		std::string appName;
@@ -47,6 +46,11 @@ namespace Havoc::Vulkan {
 
 		std::vector<const char*> getRequiredExtensions(WindowManager* windowManager);
 
+#ifndef NDEBUG
 		bool checkValidationLayerSupport();
+
+		VkDebugUtilsMessengerEXT mDebugMessenger;
+		void setupDebugMessenger();
+#endif
 	};
 }
