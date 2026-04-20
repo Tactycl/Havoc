@@ -7,6 +7,10 @@ file(GLOB_RECURSE ENGINE_SOURCES
 
 add_executable(engine ${ENGINE_SOURCES})
 
+if(APPLE)
+    target_compile_definitions(engine PRIVATE HAVOC_VK_USE_PORTABILITY)
+endif()
+
 # GLFW integration
 include(FetchContent)
 

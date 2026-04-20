@@ -1,5 +1,6 @@
 ﻿#include "core/Application.hpp"
 #include "vulkan/Instance.hpp"
+#include "vulkan/PhysicalDevice.hpp"
 
 #include <iostream>
 
@@ -15,6 +16,7 @@ int main() {
 		appInfo.appVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
 
 		Havoc::Vulkan::Instance instance{ windowManager, appInfo }; // Temporary (test) TODO
+		Havoc::Vulkan::PhysicalDevice physicalDevice{ instance }; // Temporary (test) TODO
 
 		app.run();
 	}

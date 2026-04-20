@@ -2,30 +2,13 @@
 
 #include "../platform/WindowManager.hpp"
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
 #include <string>
 #include <vector>
 #include <iostream>
 
 namespace Havoc::Vulkan {
-#ifndef NDEBUG
-	const std::vector<const char*> VALIDATION_LAYERS = { "VK_LAYER_KHRONOS_validation" };
-
-	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-		VkDebugUtilsMessageTypeFlagsEXT messageType,
-		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-		void* pUserData
-	) {
-		if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-			std::cerr << "<== Validation Layer: ==> \n" << pCallbackData->pMessage << "\n\n";
-		}
-
-		return VK_FALSE;
-	}
-#endif
-
 	struct ApplicationInfo {
 		std::string appName;
 		uint32_t appVersion;
@@ -41,15 +24,13 @@ namespace Havoc::Vulkan {
 		Instance(WindowManager* windowManager, const ApplicationInfo& applicationInfo);
 		~Instance();
 
-	private:
-		VkInstance mInstance;
+		const VkInstance& getVkInstance() const { return mInstance; }
 
-		std::vector<const char*> getRequiredExtensions(WindowManager* windowManager);
+	private:
+		VkInstance mInstance = VK_NULL_HANDLE;
 
 #ifndef NDEBUG
-		bool checkValidationLayerSupport();
-
-		VkDebugUtilsMessengerEXT mDebugMessenger;
+		VkDebugUtilsMessengerEXT mDebugMessenger = VK_NULL_HANDLE;
 		void setupDebugMessenger();
 #endif
 	};
