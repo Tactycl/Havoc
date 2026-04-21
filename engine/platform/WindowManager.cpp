@@ -35,25 +35,34 @@ namespace Havoc {
 			id = ++mNextId;
 		}
 
-		mWindows.emplace(id, std::make_unique<Window>(width, height, windowName));
+		mWindows.try_emplace(id, width, height, windowName);
 		return WindowHandle{ id };
 	}
 
 	void WindowManager::closeWindow(WindowHandle handle) {
 		auto it = mWindows.find(handle.id);
 		if (it == mWindows.end()) {
-			return;
+			throw std::out_of_range("[Havoc::WindowManager] Invalid WindowHandle");
 		}
 
 		mWindows.erase(it);
 		mFreeIds.push(handle.id);
 	}
 
+	const Window& WindowManager::getWindow(WindowHandle handle) const {
+		auto it = mWindows.find(handle.id);
+		if (it == mWindows.end()) {
+			throw std::out_of_range("[Havoc::WindowManager] Invalid WindowHandle");
+		}
+
+		return it->second;
+	}
+
 	void WindowManager::update() {
 		glfwPollEvents();
 
 		for (auto it = mWindows.begin(); it != mWindows.end();) {
-			if (it->second->shouldClose()) {
+			if (it->second.shouldClose()) {
 				WindowId erasedId = it->first;
 				it = mWindows.erase(it);
 				mFreeIds.push(erasedId);

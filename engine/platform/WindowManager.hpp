@@ -5,7 +5,6 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <memory>
 #include <unordered_map>
 #include <string>
 #include <queue>
@@ -36,6 +35,8 @@ namespace Havoc {
 
 		WindowHandle createWindow(int width, int height, const std::string& windowName);
 
+		const Window& getWindow(WindowHandle handle) const;
+
 		bool isEmpty() const { return mWindows.empty(); }
 
 		auto getRequiredInstanceExtensions(uint32_t* count) { return glfwGetRequiredInstanceExtensions(count); }
@@ -46,7 +47,7 @@ namespace Havoc {
 	private:
 		inline static bool sInitialized = false;
 
-		std::unordered_map<WindowId, std::unique_ptr<Window>> mWindows;
+		std::unordered_map<WindowId, Window> mWindows;
 
 		WindowId mNextId = 0;
 		std::queue<WindowId> mFreeIds;

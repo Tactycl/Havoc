@@ -6,16 +6,8 @@
 #include <vector>
 
 namespace {
-	struct QueueFamilyIndices {
-		std::optional<uint32_t> graphicsFamily;
-
-		bool isComplete() const {
-			return graphicsFamily.has_value();
-		}
-	};
-
-	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
-		QueueFamilyIndices indices;
+	Havoc::Vulkan::QueueFamilyIndices findQueueFamilies(const Havoc::Vulkan::Surface& surface, VkPhysicalDevice device) {
+		Havoc::Vulkan::QueueFamilyIndices indices;
 
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -25,8 +17,17 @@ namespace {
 
 		int i = 0;
 		for (const auto& queueFamily : queueFamilies) {
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface.getVkSurfaceKHR(), &presentSupport);
+			if (presentSupport) {
+				indices.presentFamily = i;
+			}
+
 			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
 				indices.graphicsFamily = i;
+			}
+
+			if (indices.isComplete()) {
 				break;
 			}
 
@@ -36,8 +37,8 @@ namespace {
 		return indices;
 	}
 
-	int rateDeviceSuitability(VkPhysicalDevice device) { // TODO: Update more to include device extension support & presentation support
-		QueueFamilyIndices indices = findQueueFamilies(device);
+	int rateDeviceSuitability(const Havoc::Vulkan::Surface& surface, VkPhysicalDevice device) { // TODO: Update more to include device extension support & presentation support
+		Havoc::Vulkan::QueueFamilyIndices indices = findQueueFamilies(surface, device);
 		if (!indices.isComplete()) {
 			return 0;
 		}
@@ -66,7 +67,7 @@ namespace {
 }
 
 namespace Havoc::Vulkan {
-	PhysicalDevice::PhysicalDevice(const Instance& instance) {
+	PhysicalDevice::PhysicalDevice(const Instance& instance, const Surface& surface) : pSurface(surface) {
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(instance.getVkInstance(), &deviceCount, nullptr);
 		if (deviceCount == 0) {
@@ -78,7 +79,7 @@ namespace Havoc::Vulkan {
 
 		std::multimap<int, VkPhysicalDevice> candidates;
 		for (const auto& device : devices) {
-			int score = rateDeviceSuitability(device);
+			int score = rateDeviceSuitability(surface, device);
 			candidates.insert(std::make_pair(score, device));
 		}
 
@@ -88,5 +89,9 @@ namespace Havoc::Vulkan {
 		else {
 			throw std::runtime_error("[Havoc::Vulkan::PhysicalDevice] Failed to find a suitable GPU");
 		}
+	}
+
+	QueueFamilyIndices PhysicalDevice::getQueueFamilies() const {
+		return findQueueFamilies(pSurface, mPhysicalDevice);
 	}
 }

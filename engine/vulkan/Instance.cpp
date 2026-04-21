@@ -5,8 +5,6 @@
 
 namespace {
 #ifndef NDEBUG
-	const std::vector<const char*> VALIDATION_LAYERS = { "VK_LAYER_KHRONOS_validation" };
-
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -53,7 +51,7 @@ namespace {
 		std::vector<VkLayerProperties> availableLayers(layerCount);
 		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-		for (const char* layerName : VALIDATION_LAYERS) {
+		for (const char* layerName : Havoc::Vulkan::VALIDATION_LAYERS) {
 			bool layerFound = false;
 			for (const auto& layerProperties : availableLayers) {
 				if (strcmp(layerName, layerProperties.layerName) == 0) {

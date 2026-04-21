@@ -9,6 +9,10 @@
 #include <iostream>
 
 namespace Havoc::Vulkan {
+#ifndef NDEBUG
+	const std::vector<const char*> VALIDATION_LAYERS = { "VK_LAYER_KHRONOS_validation" };
+#endif
+
 	struct ApplicationInfo {
 		std::string appName;
 		uint32_t appVersion;
