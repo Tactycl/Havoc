@@ -37,7 +37,7 @@ namespace {
 		return indices;
 	}
 
-	int rateDeviceSuitability(const Havoc::Vulkan::Surface& surface, VkPhysicalDevice device) { // TODO: Update more to include device extension support & presentation support
+	int rateDeviceSuitability(const Havoc::Vulkan::Surface& surface, VkPhysicalDevice device) { // TODO: Update more to include device extension support
 		Havoc::Vulkan::QueueFamilyIndices indices = findQueueFamilies(surface, device);
 		if (!indices.isComplete()) {
 			return 0;

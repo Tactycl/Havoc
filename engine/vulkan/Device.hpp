@@ -11,10 +11,12 @@ namespace Havoc::Vulkan {
 		~Device();
 
 		const VkDevice& getVkDevice() const { return mDevice; }
-		const VkQueue& getGraphicsQueue() const { return mGraphicsQueue;  }
+		const VkQueue& getGraphicsQueue() const { return mGraphicsQueue; }
+		const VkQueue& getPresentQueue() const { return mPresentQueue; }
 
 	private:
 		VkDevice mDevice = VK_NULL_HANDLE;
 		VkQueue mGraphicsQueue = VK_NULL_HANDLE;
+		VkQueue mPresentQueue = VK_NULL_HANDLE;
 	};
 }
