@@ -7,8 +7,10 @@
 #include <set>
 
 namespace {
-	Havoc::Vulkan::SwapChainSupportDetails querySwapChainSupport(const Havoc::Vulkan::Surface& surface, VkPhysicalDevice device) {
-		Havoc::Vulkan::SwapChainSupportDetails details;
+	using namespace Havoc::Vulkan;
+
+	SwapChainSupportDetails querySwapChainSupport(const Surface& surface, VkPhysicalDevice device) {
+		SwapChainSupportDetails details;
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface.getVkSurfaceKHR(), &details.capabilities);
 
 		uint32_t formatCount;
@@ -30,8 +32,8 @@ namespace {
 		return details;
 	}
 
-	Havoc::Vulkan::QueueFamilyIndices findQueueFamilies(const Havoc::Vulkan::Surface& surface, VkPhysicalDevice device) {
-		Havoc::Vulkan::QueueFamilyIndices indices;
+	QueueFamilyIndices findQueueFamilies(const Surface& surface, VkPhysicalDevice device) {
+		QueueFamilyIndices indices;
 
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -68,7 +70,7 @@ namespace {
 		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-		std::set<std::string> requiredExtensions(Havoc::Vulkan::DEVICE_EXTENSIONS.begin(), Havoc::Vulkan::DEVICE_EXTENSIONS.end());
+		std::set<std::string> requiredExtensions(DEVICE_EXTENSIONS.begin(), DEVICE_EXTENSIONS.end());
 		for (const auto& extension : availableExtensions) {
 			requiredExtensions.erase(extension.extensionName);
 		}
@@ -76,8 +78,8 @@ namespace {
 		return requiredExtensions.empty();
 	}
 
-	int rateDeviceSuitability(const Havoc::Vulkan::Surface& surface, VkPhysicalDevice device) { // TODO: Update more to include device extension support
-		Havoc::Vulkan::QueueFamilyIndices indices = findQueueFamilies(surface, device);
+	int rateDeviceSuitability(const Surface& surface, VkPhysicalDevice device) { // TODO: Update more to include device extension support
+		QueueFamilyIndices indices = findQueueFamilies(surface, device);
 		if (!indices.isComplete() || !checkDeviceExtensionSupport(device) || !querySwapChainSupport(surface, device).isComplete()) {
 			return 0;
 		}

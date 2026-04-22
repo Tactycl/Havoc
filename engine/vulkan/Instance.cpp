@@ -4,6 +4,8 @@
 #include <vector>
 
 namespace {
+	using namespace Havoc::Vulkan;
+
 #ifndef NDEBUG
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -51,7 +53,7 @@ namespace {
 		std::vector<VkLayerProperties> availableLayers(layerCount);
 		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-		for (const char* layerName : Havoc::Vulkan::VALIDATION_LAYERS) {
+		for (const char* layerName : VALIDATION_LAYERS) {
 			bool layerFound = false;
 			for (const auto& layerProperties : availableLayers) {
 				if (strcmp(layerName, layerProperties.layerName) == 0) {
