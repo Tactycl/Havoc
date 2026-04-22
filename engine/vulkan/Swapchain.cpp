@@ -98,6 +98,15 @@ namespace Havoc::Vulkan {
 
 		mSwapChainImageFormat = surfaceFormat.format;
 		mSwapChainExtent = extent;
+
+		mSwapChainImageViews.resize(mSwapChainImages.size());
+		for (auto image : mSwapChainImages) {
+			ImageViewCreateInfo viewInfo{};
+			viewInfo.image = image;
+			viewInfo.format = mSwapChainImageFormat;
+			viewInfo.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
+			mSwapChainImageViews.push_back(std::make_unique<ImageView>(device, viewInfo));
+		}
 	}
 
 	Swapchain::~Swapchain() {

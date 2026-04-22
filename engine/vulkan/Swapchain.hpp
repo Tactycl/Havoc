@@ -4,10 +4,12 @@
 #include "PhysicalDevice.hpp"
 #include "Surface.hpp"
 #include "Device.hpp"
+#include "ImageView.hpp"
 
 #include <vulkan/vulkan.h>
 
 #include <vector>
+#include <memory>
 
 namespace Havoc::Vulkan {
 	class Swapchain {
@@ -17,9 +19,12 @@ namespace Havoc::Vulkan {
 
 	private:
 		const Device& pDevice;
+
 		VkSwapchainKHR mSwapchain = VK_NULL_HANDLE;
 		VkFormat mSwapChainImageFormat;
 		VkExtent2D mSwapChainExtent;
+
 		std::vector<VkImage> mSwapChainImages;
+		std::vector<std::unique_ptr<ImageView>> mSwapChainImageViews;
 	};
 }
