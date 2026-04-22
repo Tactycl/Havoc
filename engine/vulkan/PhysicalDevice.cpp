@@ -4,8 +4,32 @@
 #include <map>
 #include <optional>
 #include <vector>
+#include <set>
 
 namespace {
+	Havoc::Vulkan::SwapChainSupportDetails querySwapChainSupport(const Havoc::Vulkan::Surface& surface, VkPhysicalDevice device) {
+		Havoc::Vulkan::SwapChainSupportDetails details;
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface.getVkSurfaceKHR(), &details.capabilities);
+
+		uint32_t formatCount;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface.getVkSurfaceKHR(), &formatCount, nullptr);
+
+		if (formatCount > 0) {
+			details.formats.resize(formatCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface.getVkSurfaceKHR(), &formatCount, details.formats.data());
+		}
+
+		uint32_t presentModeCount;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface.getVkSurfaceKHR(), &presentModeCount, nullptr);
+
+		if (presentModeCount > 0) {
+			details.presentModes.resize(presentModeCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface.getVkSurfaceKHR(), &presentModeCount, details.presentModes.data());
+		}
+
+		return details;
+	}
+
 	Havoc::Vulkan::QueueFamilyIndices findQueueFamilies(const Havoc::Vulkan::Surface& surface, VkPhysicalDevice device) {
 		Havoc::Vulkan::QueueFamilyIndices indices;
 
@@ -37,9 +61,24 @@ namespace {
 		return indices;
 	}
 
+	bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
+		uint32_t extensionCount;
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+		std::set<std::string> requiredExtensions(Havoc::Vulkan::DEVICE_EXTENSIONS.begin(), Havoc::Vulkan::DEVICE_EXTENSIONS.end());
+		for (const auto& extension : availableExtensions) {
+			requiredExtensions.erase(extension.extensionName);
+		}
+
+		return requiredExtensions.empty();
+	}
+
 	int rateDeviceSuitability(const Havoc::Vulkan::Surface& surface, VkPhysicalDevice device) { // TODO: Update more to include device extension support
 		Havoc::Vulkan::QueueFamilyIndices indices = findQueueFamilies(surface, device);
-		if (!indices.isComplete()) {
+		if (!indices.isComplete() || !checkDeviceExtensionSupport(device) || !querySwapChainSupport(surface, device).isComplete()) {
 			return 0;
 		}
 
@@ -93,5 +132,9 @@ namespace Havoc::Vulkan {
 
 	QueueFamilyIndices PhysicalDevice::getQueueFamilies() const {
 		return findQueueFamilies(pSurface, mPhysicalDevice);
+	}
+
+	SwapChainSupportDetails PhysicalDevice::getSwapChainSupportDetails() const {
+		return querySwapChainSupport(pSurface, mPhysicalDevice);
 	}
 }

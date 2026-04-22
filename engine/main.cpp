@@ -4,6 +4,7 @@
 #include "vulkan/Surface.hpp"
 #include "vulkan/PhysicalDevice.hpp"
 #include "vulkan/Device.hpp"
+#include "vulkan/Swapchain.hpp"
 
 #include <iostream>
 
@@ -19,10 +20,12 @@ int main() {
 		appInfo.appVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
 
 		// Temporary (test) TODO
+		const Havoc::Window& window = windowManager->getWindow(windowHandle);
 		Havoc::Vulkan::Instance instance{ windowManager, appInfo };
-		Havoc::Vulkan::Surface surface{ instance, windowManager->getWindow(windowHandle) };
+		Havoc::Vulkan::Surface surface{ instance, window };
 		Havoc::Vulkan::PhysicalDevice physicalDevice{ instance, surface };
 		Havoc::Vulkan::Device device{ physicalDevice };
+		Havoc::Vulkan::Swapchain swapchain{ window, surface, physicalDevice, device };
 		//
 
 		app.run();

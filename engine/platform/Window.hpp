@@ -1,5 +1,6 @@
 #pragma once
 
+#define NOMINMAX
 #define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -23,6 +24,8 @@ namespace Havoc {
 
 		void* getNativeWindowHandle() const { return glfwGetWin32Window(mWindow); }
 		void* getNativeInstanceHandle() const { return GetModuleHandle(nullptr); }
+
+		void getFramebufferSize(int* width, int* height) const { return glfwGetFramebufferSize(mWindow, width, height); }
 
 	private:
 		int mWidth;

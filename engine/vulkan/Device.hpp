@@ -2,7 +2,7 @@
 
 #include "PhysicalDevice.hpp"
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 namespace Havoc::Vulkan {
 	class Device {
