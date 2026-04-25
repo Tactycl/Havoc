@@ -17,6 +17,9 @@ namespace Havoc::Vulkan {
 		Swapchain(const Window& window, const Surface& surface, const PhysicalDevice& physicalDevice, const Device& device);
 		~Swapchain();
 
+		VkFormat getVkFormat() const { return mSwapChainImageFormat; }
+		VkExtent2D getVkExtent2D() const { return mSwapChainExtent; }
+
 	private:
 		const Device& pDevice;
 

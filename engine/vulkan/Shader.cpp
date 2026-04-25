@@ -116,4 +116,16 @@ namespace Havoc::Vulkan {
 	Shader::~Shader() {
 		vkDestroyShaderModule(pDevice.getVkDevice(), mShaderModule, nullptr);
 	}
+
+	VkShaderStageFlagBits Shader::getVkShaderStage() const {
+		return getVkShaderStageFromShaderType(mShaderType);
+	}
+
+	VkPipelineShaderStageCreateInfo Shader::getVkPipelineShaderStageCreateInfo() const {
+		VkPipelineShaderStageCreateInfo createInfo{ VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
+		createInfo.stage = getVkShaderStageFromShaderType(mShaderType);
+		createInfo.module = mShaderModule;
+		createInfo.pName = "main";
+		return createInfo;
+	}
 }

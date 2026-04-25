@@ -32,6 +32,11 @@ namespace Havoc::Vulkan {
 		Shader(const Device& device, const std::string& shaderPath, ShaderType shaderType);
 		~Shader();
 
+		VkShaderStageFlagBits getVkShaderStage() const;
+
+		ShaderType getShaderType() const { return mShaderType; }
+		VkPipelineShaderStageCreateInfo getVkPipelineShaderStageCreateInfo() const;
+
 		const VkShaderModule& getVkShaderModule() const { return mShaderModule; }
 
 	private:
