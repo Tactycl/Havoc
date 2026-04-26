@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 namespace Havoc::Vulkan {
-	Pipeline::Pipeline(const PipelineCreateInfo& createInfo, const Device& device, const Swapchain& swapchain, const RenderPass& renderPass) : pDevice(device) {
+	Pipeline::Pipeline(const PipelineCreateInfo& createInfo, const Device& device, const Swapchain& Swapchain, const RenderPass& renderPass) : pDevice(device) {
 		VkPipelineDynamicStateCreateInfo dynamicState{ VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO };
 		dynamicState.dynamicStateCount = static_cast<uint32_t>(DYNAMIC_STATES.size());
 		dynamicState.pDynamicStates = DYNAMIC_STATES.data();
@@ -17,25 +17,10 @@ namespace Havoc::Vulkan {
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{ VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
 		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
-		
-		auto swapchainExtent = swapchain.getVkExtent2D();
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = (float)swapchainExtent.width;
-		viewport.height = (float)swapchainExtent.height;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		scissor.extent = swapchainExtent;
 
 		VkPipelineViewportStateCreateInfo viewportState{ VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO };
 		viewportState.viewportCount = 1;
-		viewportState.pViewports = &viewport;
 		viewportState.scissorCount = 1;
-		viewportState.pScissors = &scissor;
 
 		VkPipelineRasterizationStateCreateInfo rasterizer{ VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
 		rasterizer.depthClampEnable = VK_FALSE;
@@ -90,7 +75,11 @@ namespace Havoc::Vulkan {
 
 		vkShaderStages.reserve(createInfo.shaderStages.size());
 		for (const auto& shader : createInfo.shaderStages) {
-			vkShaderStages.push_back(shader->getVkPipelineShaderStageCreateInfo());
+			VkPipelineShaderStageCreateInfo createInfo{ VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
+			createInfo.stage = shader->getVkShaderStage();
+			createInfo.module = shader->getVkShaderModule();
+			createInfo.pName = shader->getEntryPoint().data();
+			vkShaderStages.push_back(createInfo);
 		}
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{ VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO };
@@ -116,7 +105,12 @@ namespace Havoc::Vulkan {
 	}
 
 	Pipeline::~Pipeline() {
-		vkDestroyPipeline(pDevice.getVkDevice(), mPipeline, nullptr);
-		vkDestroyPipelineLayout(pDevice.getVkDevice(), mPipelineLayout, nullptr);
+		if (mPipelineLayout != VK_NULL_HANDLE) {
+			if (mPipeline != VK_NULL_HANDLE) {
+				vkDestroyPipeline(pDevice.getVkDevice(), mPipeline, nullptr);
+			}
+
+			vkDestroyPipelineLayout(pDevice.getVkDevice(), mPipelineLayout, nullptr);
+		}
 	}
 }

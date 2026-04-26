@@ -1,5 +1,7 @@
 #include "Swapchain.hpp"
 
+#include "RenderPass.hpp"
+
 #include <cstdint>
 #include <limits>
 #include <algorithm>
@@ -49,15 +51,15 @@ namespace {
 
 namespace Havoc::Vulkan {
 	Swapchain::Swapchain(const Window& window, const Surface& surface, const PhysicalDevice& physicalDevice, const Device& device) : pDevice(device) {
-		SwapChainSupportDetails swapChainSupport = physicalDevice.getSwapChainSupportDetails();
+		SwapchainSupportDetails SwapchainSupport = physicalDevice.getSwapchainSupportDetails();
 
-		VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-		VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-		VkExtent2D extent = chooseSwapExtent(window, swapChainSupport.capabilities);
+		VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(SwapchainSupport.formats);
+		VkPresentModeKHR presentMode = chooseSwapPresentMode(SwapchainSupport.presentModes);
+		VkExtent2D extent = chooseSwapExtent(window, SwapchainSupport.capabilities);
 
-		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-		if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
-			imageCount = swapChainSupport.capabilities.maxImageCount;
+		uint32_t imageCount = SwapchainSupport.capabilities.minImageCount + 1;
+		if (SwapchainSupport.capabilities.maxImageCount > 0 && imageCount > SwapchainSupport.capabilities.maxImageCount) {
+			imageCount = SwapchainSupport.capabilities.maxImageCount;
 		}
 
 		VkSwapchainCreateInfoKHR createInfo{ VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR  };
@@ -82,7 +84,7 @@ namespace Havoc::Vulkan {
 			createInfo.pQueueFamilyIndices = nullptr;
 		}
 
-		createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+		createInfo.preTransform = SwapchainSupport.capabilities.currentTransform;
 		createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 		createInfo.presentMode = presentMode;
 		createInfo.clipped = VK_TRUE;
@@ -93,23 +95,66 @@ namespace Havoc::Vulkan {
 		}
 
 		vkGetSwapchainImagesKHR(device.getVkDevice(), mSwapchain, &imageCount, nullptr);
-		mSwapChainImages.resize(imageCount);
-		vkGetSwapchainImagesKHR(device.getVkDevice(), mSwapchain, &imageCount, mSwapChainImages.data());
+		mSwapchainImages.resize(imageCount);
+		vkGetSwapchainImagesKHR(device.getVkDevice(), mSwapchain, &imageCount, mSwapchainImages.data());
 
-		mSwapChainImageFormat = surfaceFormat.format;
-		mSwapChainExtent = extent;
+		mSwapchainImageFormat = surfaceFormat.format;
+		mSwapchainExtent = extent;
 
-		mSwapChainImageViews.resize(mSwapChainImages.size());
-		for (auto image : mSwapChainImages) {
+		mSwapchainImageViews.reserve(mSwapchainImages.size());
+		for (auto image : mSwapchainImages) {
 			ImageViewCreateInfo viewInfo{};
 			viewInfo.image = image;
-			viewInfo.format = mSwapChainImageFormat;
+			viewInfo.format = mSwapchainImageFormat;
 			viewInfo.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
-			mSwapChainImageViews.push_back(std::make_unique<ImageView>(device, viewInfo));
+			mSwapchainImageViews.emplace_back(device, viewInfo);
 		}
 	}
 
 	Swapchain::~Swapchain() {
-		vkDestroySwapchainKHR(pDevice.getVkDevice(), mSwapchain, nullptr);
+		cleanupInternal();
 	}
+
+	void Swapchain::cleanupInternal() noexcept {
+		mSwapchainFramebuffers.clear();
+		mSwapchainImageViews.clear();
+		mSwapchainImages.clear();
+
+		if (mSwapchain != VK_NULL_HANDLE) {
+			vkDestroySwapchainKHR(pDevice.getVkDevice(), mSwapchain, nullptr);
+			mSwapchain = VK_NULL_HANDLE;
+		}
+	}
+
+	void Swapchain::createFramebuffers(const RenderPass& renderPass) {
+		mSwapchainFramebuffers.reserve(mSwapchainImageViews.size());
+		for (size_t i = 0; i < mSwapchainImageViews.size(); i++) {
+			FramebufferCreateInfo createInfo{};
+			createInfo.attachments = { mSwapchainImageViews[i].getVkImageView()};
+			createInfo.width = mSwapchainExtent.width;
+			createInfo.height = mSwapchainExtent.height;
+			mSwapchainFramebuffers.emplace_back(pDevice, renderPass, createInfo);
+		}
+	}
+
+	VkImage Swapchain::getVkImage(size_t index) const {
+		if (index < 0 || index >= mSwapchainImages.size()) {
+			throw std::runtime_error("[Havoc::Vulkan::Swapchain] index for mSwapchainImages is out of bounds");
+		}
+		return mSwapchainImages.at(index);
+	};
+
+	const ImageView& Swapchain::getImageView(size_t index) const {
+		if (index < 0 || index >= mSwapchainImages.size()) {
+			throw std::runtime_error("[Havoc::Vulkan::Swapchain] index for mSwapchainImageViews is out of bounds");
+		}
+		return mSwapchainImageViews.at(index);
+	};
+
+	const Framebuffer& Swapchain::getFramebuffer(size_t index) const {
+		if (index < 0 || index >= mSwapchainFramebuffers.size()) {
+			throw std::runtime_error("[Havoc::Vulkan::Swapchain] index for mSwapchainFramebuffers is out of bounds");
+		}
+		return mSwapchainFramebuffers.at(index);
+	};
 }

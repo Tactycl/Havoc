@@ -1,4 +1,8 @@
-﻿#include "core/Application.hpp"
+﻿#include "assetsystem/ShaderCache.hpp"
+
+#include "core/Application.hpp"
+
+#include "core/graphics/ShaderType.hpp"
 
 #include "vulkan/Instance.hpp"
 #include "vulkan/Surface.hpp"
@@ -8,6 +12,8 @@
 #include "vulkan/Shader.hpp"
 #include "vulkan/RenderPass.hpp"
 #include "vulkan/Pipeline.hpp"
+#include "vulkan/CommandPool.hpp"
+#include "vulkan/CommandBuffer.hpp"
 
 #include <iostream>
 
@@ -15,7 +21,7 @@ int main() {
 	using namespace Havoc;
 
 	try {
-		Application app{};
+		Core::Application app{};
 
 		auto windowManager = app.getWindowManager();
 		auto windowHandle = windowManager->createWindow(1920, 1080, "Havoc Engine");
@@ -31,14 +37,42 @@ int main() {
 		Vulkan::PhysicalDevice physicalDevice{ instance, surface };
 		Vulkan::Device device{ physicalDevice };
 		Vulkan::Swapchain swapchain{ window, surface, physicalDevice, device };
-		Vulkan::Shader vertShader{ device, "shaders/shader.vert", Vulkan::ShaderType::VERTEX};
-		Vulkan::Shader fragShader{ device, "shaders/shader.frag", Vulkan::ShaderType::FRAGMENT};
+		Vulkan::Shader vertShader{ device, AssetSystem::ShaderCache::loadOrCompile("shaders/shader.vert", Core::Graphics::ShaderType::VERTEX), Core::Graphics::ShaderType::VERTEX};
+		Vulkan::Shader fragShader{ device, AssetSystem::ShaderCache::loadOrCompile("shaders/shader.frag", Core::Graphics::ShaderType::FRAGMENT), Core::Graphics::ShaderType::FRAGMENT };
+
+		Vulkan::RenderPassCreateInfo renderPassInfo{};
+		renderPassInfo.format = swapchain.getVkFormat();
+
+		Vulkan::RenderPass renderPass{ device, renderPassInfo };
+		swapchain.createFramebuffers(renderPass);
 
 		Vulkan::PipelineCreateInfo pipelineInfo{};
 		pipelineInfo.shaderStages = { &vertShader, &fragShader };
 
-		Vulkan::RenderPass renderPass{ device, swapchain };
 		Vulkan::Pipeline pipeline{ pipelineInfo, device, swapchain, renderPass };
+
+		Vulkan::QueueFamilyIndices indices = physicalDevice.getQueueFamilies();
+		Vulkan::CommandPoolCreateInfo commandPoolInfo{};
+		commandPoolInfo.queueFamilyIndex = indices.graphicsFamily.value();
+
+		Vulkan::CommandPool commandPool{ device, commandPoolInfo };
+
+		Vulkan::CommandBufferCreateInfo commandBufferInfo{};
+		Vulkan::CommandBuffer commandBuffer{ device, commandPool, commandBufferInfo };
+
+		Vulkan::CommandBufferBeginInfo commandBufferBeginInfo{};
+		commandBuffer.begin(commandBufferBeginInfo);
+
+		Vulkan::RenderPassBeginInfo renderPassBeginInfo{};
+		renderPassBeginInfo.commandBuffer = &commandBuffer;
+		renderPassBeginInfo.framebuffer = &swapchain.getFramebuffer(0);
+		renderPassBeginInfo.extent = swapchain.getVkExtent2D();
+		renderPass.begin(renderPassBeginInfo);
+
+		// TODO: Make Renderer & FrameContext
+
+		renderPass.end();
+		commandBuffer.end();
 		//
 
 		app.run();

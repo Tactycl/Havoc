@@ -28,13 +28,19 @@ namespace Havoc::Vulkan {
 		Instance(WindowManager* windowManager, const ApplicationInfo& applicationInfo);
 		~Instance();
 
-		const VkInstance& getVkInstance() const { return mInstance; }
+		Instance(const Instance&) = delete;
+		Instance& operator=(const Instance&) = delete;
+
+		Instance(Instance&&) noexcept = default;
+		Instance& operator=(Instance&&) noexcept = default;
+
+		VkInstance getVkInstance() const noexcept { return mInstance; }
 
 	private:
 		VkInstance mInstance = VK_NULL_HANDLE;
-
 #ifndef NDEBUG
 		VkDebugUtilsMessengerEXT mDebugMessenger = VK_NULL_HANDLE;
+
 		void setupDebugMessenger();
 #endif
 	};

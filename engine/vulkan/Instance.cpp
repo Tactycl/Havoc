@@ -138,7 +138,9 @@ namespace Havoc::Vulkan {
 			DestroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
 		}
 #endif
-		vkDestroyInstance(mInstance, nullptr);
+		if (mInstance != VK_NULL_HANDLE) {
+			vkDestroyInstance(mInstance, nullptr);
+		}
 	}
 
 #ifndef NDEBUG

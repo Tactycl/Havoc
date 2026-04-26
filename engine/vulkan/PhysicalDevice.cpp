@@ -9,8 +9,8 @@
 namespace {
 	using namespace Havoc::Vulkan;
 
-	SwapChainSupportDetails querySwapChainSupport(const Surface& surface, VkPhysicalDevice device) {
-		SwapChainSupportDetails details;
+	SwapchainSupportDetails querySwapchainSupport(const Surface& surface, VkPhysicalDevice device) {
+		SwapchainSupportDetails details;
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface.getVkSurfaceKHR(), &details.capabilities);
 
 		uint32_t formatCount;
@@ -78,9 +78,18 @@ namespace {
 		return requiredExtensions.empty();
 	}
 
-	int rateDeviceSuitability(const Surface& surface, VkPhysicalDevice device) { // TODO: Update more to include device extension support
+	int rateDeviceSuitability(const Surface& surface, VkPhysicalDevice device) {
 		QueueFamilyIndices indices = findQueueFamilies(surface, device);
-		if (!indices.isComplete() || !checkDeviceExtensionSupport(device) || !querySwapChainSupport(surface, device).isComplete()) {
+		if (!indices.isComplete()) {
+			return 0;
+		}
+
+		if (!checkDeviceExtensionSupport(device)) {
+			return 0;
+		}
+
+		SwapchainSupportDetails swapchainSupportDetails = querySwapchainSupport(surface, device);
+		if (!swapchainSupportDetails.isComplete()) {
 			return 0;
 		}
 
@@ -94,14 +103,55 @@ namespace {
 		}
 
 		int score = 0;
-		if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-			score += 1000;
-		}
-		else if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
-			score += 500;
+		switch (deviceProperties.deviceType) {
+			case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+				score += 2000;
+				break;
+
+			case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+				score += 1000;
+				break;
+
+			case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+				score += 700;
+				break;
+
+			default:
+				score += 100;
 		}
 
-		score += deviceProperties.limits.maxImageDimension2D;
+		if (indices.graphicsFamily == indices.presentFamily) {
+			score += 300;
+		}
+		else {
+			score += 150;
+		}
+
+		score += static_cast<int>(swapchainSupportDetails.formats.size()) * 10;
+		score += static_cast<int>(swapchainSupportDetails.presentModes.size()) * 20;
+
+		for (const auto& mode : swapchainSupportDetails.presentModes) {
+			if (mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+				score += 300;
+			}
+			else if (mode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+				score += 150;
+			}
+		}
+
+		score += deviceProperties.limits.maxImageDimension2D / 1024;
+
+		VkPhysicalDeviceMemoryProperties memoryProperties;
+		vkGetPhysicalDeviceMemoryProperties(device, &memoryProperties);
+
+		VkDeviceSize totalVram = 0;
+		for (uint32_t i = 0; i < memoryProperties.memoryHeapCount; i++) {
+			if (memoryProperties.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+				totalVram += memoryProperties.memoryHeaps[i].size;
+			}
+		}
+
+		score += static_cast<int>(totalVram / (1024 * 1024 * 1024)) * 100;
 
 		return score;
 	}
@@ -132,11 +182,11 @@ namespace Havoc::Vulkan {
 		}
 	}
 
-	QueueFamilyIndices PhysicalDevice::getQueueFamilies() const {
+	QueueFamilyIndices PhysicalDevice::getQueueFamilies() const noexcept {
 		return findQueueFamilies(pSurface, mPhysicalDevice);
 	}
 
-	SwapChainSupportDetails PhysicalDevice::getSwapChainSupportDetails() const {
-		return querySwapChainSupport(pSurface, mPhysicalDevice);
+	SwapchainSupportDetails PhysicalDevice::getSwapchainSupportDetails() const noexcept {
+		return querySwapchainSupport(pSurface, mPhysicalDevice);
 	}
 }

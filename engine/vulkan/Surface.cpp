@@ -10,6 +10,8 @@ namespace Havoc::Vulkan {
 	}
 
 	Surface::~Surface() {
-		vkDestroySurfaceKHR(pInstance.getVkInstance(), mSurface, nullptr);
+		if (mSurface != VK_NULL_HANDLE) {
+			vkDestroySurfaceKHR(pInstance.getVkInstance(), mSurface, nullptr);
+		}
 	}
 }

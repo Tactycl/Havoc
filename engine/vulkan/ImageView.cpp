@@ -26,6 +26,8 @@ namespace Havoc::Vulkan {
 	}
 
 	ImageView::~ImageView() {
-		vkDestroyImageView(pDevice.getVkDevice(), mImageView, nullptr);
+		if (mImageView != VK_NULL_HANDLE) {
+			vkDestroyImageView(pDevice.getVkDevice(), mImageView, nullptr);
+		}
 	}
 }

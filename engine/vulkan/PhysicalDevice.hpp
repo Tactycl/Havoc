@@ -21,7 +21,7 @@ namespace Havoc::Vulkan {
 		}
 	};
 
-	struct SwapChainSupportDetails {
+	struct SwapchainSupportDetails {
 		VkSurfaceCapabilitiesKHR capabilities{};
 		std::vector<VkSurfaceFormatKHR> formats;
 		std::vector<VkPresentModeKHR> presentModes;
@@ -36,13 +36,19 @@ namespace Havoc::Vulkan {
 		PhysicalDevice(const Instance& instance, const Surface& surface);
 		~PhysicalDevice() = default;
 
-		const VkPhysicalDevice& getVkPhysicalDevice() const { return mPhysicalDevice; }
+		PhysicalDevice(const PhysicalDevice&) = delete;
+		PhysicalDevice& operator=(const PhysicalDevice&) = delete;
 
-		QueueFamilyIndices getQueueFamilies() const;
-		SwapChainSupportDetails getSwapChainSupportDetails() const;
+		PhysicalDevice(PhysicalDevice&&) = delete;
+		PhysicalDevice& operator=(PhysicalDevice&&) = delete;
+
+		VkPhysicalDevice getVkPhysicalDevice() const noexcept { return mPhysicalDevice; }
+		QueueFamilyIndices getQueueFamilies() const noexcept;
+		SwapchainSupportDetails getSwapchainSupportDetails() const noexcept;
 
 	private:
 		const Surface& pSurface;
+
 		VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
 	};
 }

@@ -1,47 +1,55 @@
 #pragma once
 
+#include "../core/graphics/ShaderType.hpp"
+
 #include "Device.hpp"
 
 #include <vulkan/vulkan.h>
-#include <shaderc/shaderc.hpp>
 
 #include <string>
+#include <cassert>
 
 namespace Havoc::Vulkan {
-	enum class ShaderType {
-		VERTEX,
-		FRAGMENT,
-		COMPUTE,
-		GEOMETRY,
-		TESSELLATION_CONTROL,
-		TESSELLATION_EVALUATION,
-
-		RAY_GEN,
-		ANY_HIT,
-		CLOSEST_HIT,
-		MISS,
-		INTERSECTION,
-		CALLABLE,
-
-		MESH,
-		TASK,
-	};
-
 	class Shader {
 	public:
-		Shader(const Device& device, const std::string& shaderPath, ShaderType shaderType);
+		Shader(const Device& device, const std::vector<uint32_t>& spirv, Core::Graphics::ShaderType shaderType);
 		~Shader();
 
-		VkShaderStageFlagBits getVkShaderStage() const;
+		Shader(const Shader&) = delete;
+		Shader& operator=(const Shader&) = delete;
 
-		ShaderType getShaderType() const { return mShaderType; }
-		VkPipelineShaderStageCreateInfo getVkPipelineShaderStageCreateInfo() const;
+		Shader(Shader&& other) noexcept : pDevice(other.pDevice), mEntryPoint(other.mEntryPoint), mShaderType(other.mShaderType), mShaderModule(other.mShaderModule) {
+			other.mShaderModule = VK_NULL_HANDLE;
+		}
 
-		const VkShaderModule& getVkShaderModule() const { return mShaderModule; }
+		Shader& operator=(Shader&& other) noexcept {
+			if (this != &other) {
+				assert(&pDevice == &other.pDevice);
+				if (mShaderModule != VK_NULL_HANDLE) {
+					vkDestroyShaderModule(pDevice.getVkDevice(), mShaderModule, nullptr);
+				}
+
+				mShaderModule = other.mShaderModule;
+				mShaderType = other.mShaderType;
+				mEntryPoint = other.mEntryPoint;
+
+				other.mShaderModule = VK_NULL_HANDLE;
+			}
+
+			return *this;
+		}
+
+		VkShaderStageFlagBits getVkShaderStage() const noexcept;
+		Core::Graphics::ShaderType getShaderType() const noexcept { return mShaderType; }
+		VkShaderModule getVkShaderModule() const noexcept { return mShaderModule; }
+		const std::string_view getEntryPoint() const noexcept { return mEntryPoint; }
 
 	private:
 		const Device& pDevice;
-		ShaderType mShaderType;
+
+		Core::Graphics::ShaderType mShaderType;
 		VkShaderModule mShaderModule = VK_NULL_HANDLE;
+
+		std::string_view mEntryPoint = "main";
 	};
 }

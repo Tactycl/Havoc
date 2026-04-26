@@ -45,6 +45,9 @@ namespace Havoc::Vulkan {
 	}
 
 	Device::~Device() {
-		vkDestroyDevice(mDevice, nullptr);
+		if (mDevice != VK_NULL_HANDLE) {
+			vkDeviceWaitIdle(mDevice);
+			vkDestroyDevice(mDevice, nullptr);
+		}
 	}
 }

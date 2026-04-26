@@ -1,6 +1,6 @@
 #include "Application.hpp"
 
-namespace Havoc {
+namespace Havoc::Core {
 	void Application::run() {
 		while (!mWindowManager.isEmpty()) {
 			mWindowManager.update();

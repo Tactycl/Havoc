@@ -2,7 +2,7 @@
 
 #include "../platform/WindowManager.hpp"
 
-namespace Havoc {
+namespace Havoc::Core {
 	class Application {
 	public:
 		Application() : mWindowManager() {}
