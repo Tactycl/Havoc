@@ -71,10 +71,10 @@ namespace {
 	}
 #endif
 
-	std::vector<const char*> getRequiredExtensions(Havoc::WindowManager* windowManager) {
+	std::vector<const char*> getRequiredExtensions(const Havoc::Window& window) {
 		uint32_t glfwExtensionCount = 0;
 		const char** glfwExtensions;
-		glfwExtensions = windowManager->getRequiredInstanceExtensions(&glfwExtensionCount);
+		glfwExtensions = window.getRequiredInstanceExtensions(&glfwExtensionCount);
 
 		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 #ifndef NDEBUG
@@ -88,7 +88,7 @@ namespace {
 }
 
 namespace Havoc::Vulkan {
-	Instance::Instance(WindowManager* windowManager, const ApplicationInfo& applicationInfo) {
+	Instance::Instance(const Window& window, const ApplicationInfo& applicationInfo) {
 #ifndef NDEBUG
 		if (!checkValidationLayerSupport()) {
 			throw std::runtime_error("[Havoc::Vulkan::Instance] Couldn't find an available validation layer");
@@ -108,7 +108,7 @@ namespace Havoc::Vulkan {
 		createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 #endif
 
-		auto extensions = getRequiredExtensions(windowManager);
+		auto extensions = getRequiredExtensions(window);
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 		createInfo.ppEnabledExtensionNames = extensions.data();
 

@@ -49,7 +49,7 @@ namespace Havoc {
 		mFreeIds.push(handle.id);
 	}
 
-	const Window& WindowManager::getWindow(WindowHandle handle) const {
+	Window& WindowManager::getWindow(WindowHandle handle) {
 		auto it = mWindows.find(handle.id);
 		if (it == mWindows.end()) {
 			throw std::out_of_range("[Havoc::WindowManager] Invalid WindowHandle");

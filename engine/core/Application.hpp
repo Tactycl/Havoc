@@ -9,9 +9,14 @@ namespace Havoc::Core {
 
 		WindowManager* getWindowManager() { return &mWindowManager; }
 
-		void run();
+		void start() noexcept { mIsRunning = true; }
+		void update() noexcept { mWindowManager.update(); }
+		void end() noexcept { mIsRunning = false; }
+
+		bool isRunning() const noexcept { return mIsRunning; }
 
 	private:
+		bool mIsRunning = false;
 		WindowManager mWindowManager;
 	};
 }

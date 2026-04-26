@@ -27,9 +27,24 @@ namespace Havoc {
 
 		void getFramebufferSize(int* width, int* height) const { return glfwGetFramebufferSize(mWindow, width, height); }
 
+		auto getRequiredInstanceExtensions(uint32_t* count) const { return glfwGetRequiredInstanceExtensions(count); }
+
+		bool isFramebufferResized() const noexcept { return mIsFramebufferResized; }
+		void setFramebufferResized(bool isResized = false) noexcept { mIsFramebufferResized = isResized; }
+
+		void waitEvents() { glfwWaitEvents(); }
+
+		bool consumeFramebufferResized() {
+			bool v = mIsFramebufferResized;
+			mIsFramebufferResized = false;
+			return v;
+		}
+
 	private:
 		int mWidth;
 		int mHeight;
+
+		bool mIsFramebufferResized = false;
 
 		std::string mWindowName;
 

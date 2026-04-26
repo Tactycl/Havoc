@@ -16,7 +16,7 @@ namespace Havoc::Vulkan {
 		std::optional<uint32_t> graphicsFamily;
 		std::optional<uint32_t> presentFamily;
 
-		bool isComplete() const {
+		bool isComplete() const noexcept {
 			return graphicsFamily.has_value() && presentFamily.has_value();
 		}
 	};
@@ -26,7 +26,7 @@ namespace Havoc::Vulkan {
 		std::vector<VkSurfaceFormatKHR> formats;
 		std::vector<VkPresentModeKHR> presentModes;
 
-		bool isComplete() const {
+		bool isComplete() const noexcept {
 			return !formats.empty() && !presentModes.empty();
 		}
 	};

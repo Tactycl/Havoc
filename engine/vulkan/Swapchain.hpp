@@ -6,12 +6,15 @@
 #include "Device.hpp"
 #include "ImageView.hpp"
 #include "Framebuffer.hpp"
+#include "Semaphore.hpp"
+#include "Fence.hpp"
 
 #include <vulkan/vulkan.h>
 
 #include <vector>
 #include <memory>
 #include <cassert>
+#include <cstdint>
 
 namespace Havoc::Vulkan {
 	class RenderPass;
@@ -57,12 +60,18 @@ namespace Havoc::Vulkan {
 
 		void createFramebuffers(const RenderPass& renderPass);
 
+		VkResult acquireNextImage(uint32_t* imageIndex, const Semaphore& semaphore, Fence* fence = nullptr, uint64_t timeout = UINT64_MAX);
+
+		size_t getImageCount() const noexcept { return mSwapchainImages.size(); }
+
 		VkImage getVkImage(size_t index = 0) const;
 		const ImageView& getImageView(size_t index = 0) const;
 		const Framebuffer& getFramebuffer(size_t index = 0) const;
 
 		VkFormat getVkFormat() const noexcept { return mSwapchainImageFormat; }
 		VkExtent2D getVkExtent2D() const noexcept { return mSwapchainExtent; }
+
+		VkSwapchainKHR getVkSwapchainKHR() const noexcept { return mSwapchain; }
 
 	private:
 		void cleanupInternal() noexcept;

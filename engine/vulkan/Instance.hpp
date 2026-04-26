@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../platform/WindowManager.hpp"
+#include "../platform/Window.hpp"
 
 #include <vulkan/vulkan.h>
 
@@ -25,7 +25,7 @@ namespace Havoc::Vulkan {
 
 	class Instance {
 	public:
-		Instance(WindowManager* windowManager, const ApplicationInfo& applicationInfo);
+		Instance(const Window& window, const ApplicationInfo& applicationInfo);
 		~Instance();
 
 		Instance(const Instance&) = delete;

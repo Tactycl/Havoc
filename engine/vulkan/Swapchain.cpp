@@ -137,6 +137,10 @@ namespace Havoc::Vulkan {
 		}
 	}
 
+	VkResult Swapchain::acquireNextImage(uint32_t* imageIndex, const Semaphore& semaphore, Fence* fence, uint64_t timeout) {
+		return vkAcquireNextImageKHR(pDevice.getVkDevice(), mSwapchain, timeout, semaphore.getVkSemaphore(), (fence == nullptr ? VK_NULL_HANDLE : fence->getVkFence()), imageIndex);
+	}
+
 	VkImage Swapchain::getVkImage(size_t index) const {
 		if (index < 0 || index >= mSwapchainImages.size()) {
 			throw std::runtime_error("[Havoc::Vulkan::Swapchain] index for mSwapchainImages is out of bounds");

@@ -32,11 +32,9 @@ namespace Havoc {
 
 		WindowHandle createWindow(int width, int height, const std::string& windowName);
 
-		const Window& getWindow(WindowHandle handle) const;
+		Window& getWindow(WindowHandle handle);
 
 		bool isEmpty() const { return mWindows.empty(); }
-
-		auto getRequiredInstanceExtensions(uint32_t* count) { return glfwGetRequiredInstanceExtensions(count); }
 
 		void closeWindow(WindowHandle handle);
 		void update();

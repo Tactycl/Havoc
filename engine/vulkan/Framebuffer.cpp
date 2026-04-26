@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 namespace Havoc::Vulkan {
-	Framebuffer::Framebuffer(const Device& device, const RenderPass& renderPass, const FramebufferCreateInfo& info) : pDevice(device) {
+	Framebuffer::Framebuffer(const Device& device, const RenderPass& renderPass, const FramebufferCreateInfo& info) : pDevice(device), pRenderPass(renderPass) {
 		if (info.attachments.empty()) {
 			throw std::runtime_error("[Havoc::Vulkan::Framebuffer] Framebuffer requires at least one attachment");
 		}
@@ -21,6 +21,9 @@ namespace Havoc::Vulkan {
 		if (vkCreateFramebuffer(device.getVkDevice(), &createInfo, nullptr, &mFramebuffer) != VK_SUCCESS) {
 			throw std::runtime_error("[Havoc::Vulkan::Framebuffer] Failed to create VkFramebuffer");
 		}
+
+		mFramebufferExtent = { info.width, info.height };
+		mAttachmentCount = static_cast<uint32_t>(info.attachments.size());
 	}
 
 	Framebuffer::~Framebuffer() {

@@ -23,11 +23,21 @@ namespace Havoc::Vulkan {
 		subpass.colorAttachmentCount = 1;
 		subpass.pColorAttachments = &colorAttachmentRef;
 
+		VkSubpassDependency dependency{};
+		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+		dependency.dstSubpass = 0;
+		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.srcAccessMask = 0;
+		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
 		VkRenderPassCreateInfo renderPassInfo{ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO };
 		renderPassInfo.attachmentCount = 1;
 		renderPassInfo.pAttachments = &colorAttachment;
 		renderPassInfo.subpassCount = 1;
 		renderPassInfo.pSubpasses = &subpass;
+		renderPassInfo.dependencyCount = 1;
+		renderPassInfo.pDependencies = &dependency;
 		
 		if (vkCreateRenderPass(device.getVkDevice(), &renderPassInfo, nullptr, &mRenderPass) != VK_SUCCESS) {
 			throw std::runtime_error("[Havoc::Vulkan::RenderPass] Failed to create VkRenderPass");
@@ -38,48 +48,5 @@ namespace Havoc::Vulkan {
 		if (mRenderPass != VK_NULL_HANDLE) {
 			vkDestroyRenderPass(pDevice.getVkDevice(), mRenderPass, nullptr);
 		}
-	}
-
-	void RenderPass::begin(const RenderPassBeginInfo& info) {
-		if (!info.isComplete()) {
-			throw std::runtime_error("[Havoc::Vulkan::RenderPass] Passed RenderPassBeginInfo isn't complete");
-		}
-
-		if (info.commandBuffer->getCommandBufferState() != CommandBufferState::RECORDING) {
-			throw std::runtime_error("[Havoc::Vulkan::RenderPass] Passed CommandBuffer is not in RECORDING state");
-		}
-
-		if (mRenderPassState != RenderPassState::INITIAL) {
-			throw std::runtime_error("[Havoc::Vulkan::RenderPass] Tried to begin Render Pass, but is not in INITIAL state");
-		}
-
-		VkRenderPassBeginInfo renderPassInfo{ VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
-		renderPassInfo.renderPass = mRenderPass;
-		renderPassInfo.framebuffer = info.framebuffer->getVkFramebuffer();
-		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = info.extent;
-
-		VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-		renderPassInfo.clearValueCount = 1;
-		renderPassInfo.pClearValues = &clearColor;
-		vkCmdBeginRenderPass(info.commandBuffer->getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-		mVkCommandBuffer = info.commandBuffer->getVkCommandBuffer();
-		mRenderPassState = RenderPassState::RECORDING;
-	}
-
-	void RenderPass::end() {
-		if (mRenderPassState != RenderPassState::RECORDING) {
-			throw std::runtime_error("[Havoc::Vulkan::RenderPass] Tried to end Render Pass, but is not in RECORDING state");
-		}
-
-		if (mVkCommandBuffer == VK_NULL_HANDLE) {
-			throw std::runtime_error("[Havoc::Vulkan::RenderPass] RenderPass end called with invalid command buffer");
-		}
-
-		vkCmdEndRenderPass(mVkCommandBuffer);
-
-		mVkCommandBuffer = VK_NULL_HANDLE;
-		mRenderPassState = RenderPassState::INITIAL;
 	}
 }
