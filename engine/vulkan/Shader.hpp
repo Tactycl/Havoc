@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../renderer/common/ShaderType.hpp"
+#include "../graphics/ShaderType.hpp"
 
 #include "Device.hpp"
 
@@ -12,7 +12,7 @@
 namespace Havoc::Vulkan {
 	class Shader {
 	public:
-		Shader(const Device& device, const std::vector<uint32_t>& spirv, Core::Graphics::ShaderType shaderType);
+		Shader(const Device& device, const std::vector<uint32_t>& spirv, Graphics::ShaderType shaderType);
 		~Shader();
 
 		Shader(const Shader&) = delete;
@@ -40,14 +40,14 @@ namespace Havoc::Vulkan {
 		}
 
 		VkShaderStageFlagBits getVkShaderStage() const noexcept;
-		Core::Graphics::ShaderType getShaderType() const noexcept { return mShaderType; }
+		Graphics::ShaderType getShaderType() const noexcept { return mShaderType; }
 		VkShaderModule getVkShaderModule() const noexcept { return mShaderModule; }
 		const std::string_view getEntryPoint() const noexcept { return mEntryPoint; }
 
 	private:
 		const Device& pDevice;
 
-		Core::Graphics::ShaderType mShaderType;
+		Graphics::ShaderType mShaderType;
 		VkShaderModule mShaderModule = VK_NULL_HANDLE;
 
 		std::string_view mEntryPoint = "main";

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/RendererApi.hpp"
+#include "../graphics/RendererApi.hpp"
 #include "FrameContext.hpp"
 #include "IRendererBackend.hpp"
 

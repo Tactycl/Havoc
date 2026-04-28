@@ -6,7 +6,7 @@
 #include <functional>
 
 namespace {
-	using namespace Havoc::Core::Graphics;
+	using namespace Havoc::Graphics;
 
 	shaderc_shader_kind getShadercShaderKindFromShaderType(ShaderType shaderType) {
 		switch (shaderType) {
@@ -58,7 +58,7 @@ namespace {
 	}
 
 	std::string getCachePath(const std::string& hash) {
-		std::filesystem::path cacheDir = "cache/shaders";
+		std::filesystem::path cacheDir = "shaders/bin";
 		std::filesystem::create_directories(cacheDir);
 
 		return (cacheDir / (hash + ".spv")).string();
@@ -128,7 +128,7 @@ namespace {
 }
 
 namespace Havoc::AssetSystem {
-	std::vector<uint32_t> ShaderCache::loadOrCompile(const std::string& path, Core::Graphics::ShaderType shaderType) {
+	std::vector<uint32_t> ShaderCache::loadOrCompile(const std::string& path, Graphics::ShaderType shaderType) {
 		std::string source = readFileAsString(path);
 		std::string hash = hashShader(source, static_cast<int>(shaderType));
 		std::string cachePath = getCachePath(hash);

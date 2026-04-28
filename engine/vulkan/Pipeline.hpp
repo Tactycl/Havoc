@@ -12,13 +12,29 @@
 #include <cassert>
 
 namespace Havoc::Vulkan {
-	const std::vector<VkDynamicState> DYNAMIC_STATES = {
-		VK_DYNAMIC_STATE_VIEWPORT,
-		VK_DYNAMIC_STATE_SCISSOR
-	};
-
 	struct PipelineCreateInfo {
 		std::vector<Shader*> shaderStages;
+
+		std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+
+		std::vector<VkVertexInputBindingDescription> bindings;
+		std::vector<VkVertexInputAttributeDescription> attributes;
+
+		VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+		VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
+		VkCullModeFlags cullMode = VK_CULL_MODE_BACK_BIT;
+		VkFrontFace frontFace = VK_FRONT_FACE_CLOCKWISE;
+
+		VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
+
+		bool depthTestEnable = false;
+		bool depthWriteEnable = false;
+
+		std::vector<VkPipelineColorBlendAttachmentState> colorAttachments;
+
+		std::vector<VkDescriptorSetLayout> setLayouts;
+		std::vector<VkPushConstantRange> pushConstants;
 	};
 
 	class Pipeline {

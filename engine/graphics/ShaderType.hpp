@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Havoc::Core::Graphics {
+namespace Havoc::Graphics {
 	enum class ShaderType {
 		VERTEX,
 		FRAGMENT,

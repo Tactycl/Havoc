@@ -2,6 +2,23 @@
 
 #include "../../assetsystem/ShaderCache.hpp"
 
+/* Refactor a bit later (Pipeline creation & ToVkFormat -> probably put into vulkan specific class) */
+/* Add Vertex Buffers & upload via staging buffer */
+/* Add Index Buffer & upload via staging buffer */
+
+namespace {
+	using namespace Havoc::Graphics;
+
+	VkFormat ToVkFormat(VertexAttributeType type) {
+		switch (type) {
+			case VertexAttributeType::Float2: return VK_FORMAT_R32G32_SFLOAT;
+			case VertexAttributeType::Float3: return VK_FORMAT_R32G32B32_SFLOAT;
+			case VertexAttributeType::Float4: return VK_FORMAT_R32G32B32A32_SFLOAT;
+		}
+		throw std::runtime_error("Unsupported type");
+	}
+}
+
 namespace Havoc::Renderer::Vulkan {
 	using namespace Havoc::Vulkan;
 
@@ -21,8 +38,8 @@ namespace Havoc::Renderer::Vulkan {
 		mDevice.emplace(mPhysicalDevice.value());
 		mSwapchain.emplace(info.window, mSurface.value(), mPhysicalDevice.value(), mDevice.value());
 
-		mVertShader.emplace(mDevice.value(), AssetSystem::ShaderCache::loadOrCompile("shaders/shader.vert", Core::Graphics::ShaderType::VERTEX), Core::Graphics::ShaderType::VERTEX);
-		mFragShader.emplace(mDevice.value(), AssetSystem::ShaderCache::loadOrCompile("shaders/shader.frag", Core::Graphics::ShaderType::FRAGMENT), Core::Graphics::ShaderType::FRAGMENT);
+		mVertShader.emplace(mDevice.value(), AssetSystem::ShaderCache::loadOrCompile("shaders/src/simple.vert", Graphics::ShaderType::VERTEX), Graphics::ShaderType::VERTEX);
+		mFragShader.emplace(mDevice.value(), AssetSystem::ShaderCache::loadOrCompile("shaders/src/simple.frag", Graphics::ShaderType::FRAGMENT), Graphics::ShaderType::FRAGMENT);
 
 		Vulkan::RenderPassCreateInfo renderPassInfo{};
 		renderPassInfo.format = mSwapchain.value().getVkFormat();
@@ -32,8 +49,38 @@ namespace Havoc::Renderer::Vulkan {
 
 		Vulkan::PipelineCreateInfo pipelineInfo{};
 		pipelineInfo.shaderStages = { &mVertShader.value(), &mFragShader.value() };
+		
+		VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+		colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		colorBlendAttachment.blendEnable = VK_FALSE;
+		colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+		colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+		colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+		colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+		colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+		colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
-		mPipeline.emplace(pipelineInfo, mDevice.value(), mSwapchain.value(), mRenderPass.value());
+		pipelineInfo.colorAttachments = { colorBlendAttachment };
+
+		auto vertexLayout = Graphics::Simple::Vertex::getLayout();
+
+		VkVertexInputBindingDescription bindingDescription{};
+		bindingDescription.binding = 0;
+		bindingDescription.stride = vertexLayout.stride;
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		pipelineInfo.bindings = { bindingDescription };
+
+		pipelineInfo.attributes.resize(vertexLayout.attributes.size());
+		for (size_t i = 0; i < vertexLayout.attributes.size(); i++) {
+			auto vertexInfo = vertexLayout.attributes[i];
+			pipelineInfo.attributes[i].binding = 0;
+			pipelineInfo.attributes[i].location = vertexInfo.location;
+			pipelineInfo.attributes[i].format = ToVkFormat(vertexInfo.type);
+			pipelineInfo.attributes[i].offset = static_cast<uint32_t>(vertexInfo.offset);
+		}
+
+		mSimplePipeline.emplace(pipelineInfo, mDevice.value(), mSwapchain.value(), mRenderPass.value());
 
 		Vulkan::QueueFamilyIndices indices = mPhysicalDevice.value().getQueueFamilies();
 		Vulkan::CommandPoolCreateInfo commandPoolInfo{};
@@ -124,7 +171,7 @@ namespace Havoc::Renderer::Vulkan {
 		cmd.beginRenderPass(renderPassBeginInfo);
 
 		Vulkan::PipelineBindInfo pipelineBindInfo{};
-		pipelineBindInfo.pipeline = &mPipeline.value();
+		pipelineBindInfo.pipeline = &mSimplePipeline.value();
 
 		cmd.bindPipeline(pipelineBindInfo);
 

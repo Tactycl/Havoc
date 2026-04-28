@@ -4,7 +4,7 @@
 #include <fstream>
 
 namespace {
-	using namespace Havoc::Core::Graphics;
+	using namespace Havoc::Graphics;
 
 	VkShaderStageFlagBits getVkShaderStageFromShaderType(ShaderType shaderType) {
 		switch (shaderType) {
@@ -46,7 +46,7 @@ namespace {
 }
 
 namespace Havoc::Vulkan {
-	Shader::Shader(const Device& device, const std::vector<uint32_t>& spirv, Core::Graphics::ShaderType shaderType) : pDevice(device), mShaderType(shaderType) {
+	Shader::Shader(const Device& device, const std::vector<uint32_t>& spirv, Graphics::ShaderType shaderType) : pDevice(device), mShaderType(shaderType) {
 		if (spirv.empty()) {
 			throw std::runtime_error("[Havoc::Vulkan::Shader] Empty SPIR-V passed to Shader");
 		}

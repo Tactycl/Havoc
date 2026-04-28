@@ -134,7 +134,11 @@ if (MSVC)
 endif()
 
 add_custom_command(TARGET engine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:engine>/shaders
+    COMMAND ${CMAKE_COMMAND} -E rm -rf $<TARGET_FILE_DIR:engine>/shaders
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:engine>/shaders/src
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:engine>/shaders/bin
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/engine/shaders
-    $<TARGET_FILE_DIR:engine>/shaders
+            ${CMAKE_SOURCE_DIR}/engine/shaders
+            $<TARGET_FILE_DIR:engine>/shaders/src
 )

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../renderer/common/ShaderType.hpp"
+#include "../graphics/ShaderType.hpp"
 
 #include <string>
 #include <vector>
@@ -9,6 +9,6 @@
 namespace Havoc::AssetSystem {
 	class ShaderCache {
 	public:
-		static std::vector<uint32_t> loadOrCompile(const std::string& path, Core::Graphics::ShaderType shaderType);
+		static std::vector<uint32_t> loadOrCompile(const std::string& path, Graphics::ShaderType shaderType);
 	};
 }

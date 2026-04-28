@@ -2,6 +2,8 @@
 
 #include "../IRendererBackend.hpp"
 
+#include "../../graphics/Vertex.hpp"
+
 #include "../../vulkan/Instance.hpp"
 #include "../../vulkan/Surface.hpp"
 #include "../../vulkan/PhysicalDevice.hpp"
@@ -50,7 +52,7 @@ namespace Havoc::Renderer::Vulkan {
 		std::optional<Shader> mFragShader;
 
 		std::optional<RenderPass> mRenderPass;
-		std::optional<Pipeline> mPipeline;
+		std::optional<Pipeline> mSimplePipeline;
 
 		std::optional<CommandPool> mCommandPool;
 
